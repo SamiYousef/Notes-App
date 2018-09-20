@@ -170,5 +170,13 @@ extension NotesViewController: UITableViewDelegate, UITableViewDataSource {
         }
         presentAddNoteController(with: note)
     }
+
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        guard editingStyle == .delete else { return }
+        guard let note = notes?[indexPath.row] else {
+            fatalError("Unexpected indexPath")
+        }
+        coreDataManager.managedObjectContext.delete(note)
+    }
 }
 
