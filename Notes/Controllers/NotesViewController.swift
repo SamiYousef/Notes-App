@@ -11,6 +11,17 @@ import CoreData
 
 class NotesViewController: UIViewController {
 
+    private lazy var fetchedResultsController: NSFetchedResultsController<Note> = {
+        let fetchRequest: NSFetchRequest<Note> = Note.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(Note.updatedAt), ascending: false)]
+        let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                                  managedObjectContext: coreDataManager.managedObjectContext,
+                                                                  sectionNameKeyPath: nil,
+                                                                  cacheName: nil)
+        fetchedResultsController.delegate = self
+        return fetchedResultsController
+    }()
+
     lazy var notesTableView: UITableView = {
         let notesTableView = UITableView()
         notesTableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
@@ -30,19 +41,12 @@ class NotesViewController: UIViewController {
 
     lazy var addBarButtonItem: UIBarButtonItem = {
         let addBarItem = UIBarButtonItem(barButtonSystemItem: .add, target: self,
-                                        action: #selector(addBarItemTapped(_:)))
+                                         action: #selector(addBarItemTapped(_:)))
         return addBarItem
     }()
 
-    private var notesDidChange = false
-    private var notes: [Note]? {
-        didSet {
-            updateView()
-        }
-    }
-
     private var hasNotes: Bool {
-        guard let notes = notes else { return false }
+        guard let notes = self.fetchedResultsController.fetchedObjects else { return false }
         return notes.count > 0
     }
 
@@ -56,7 +60,6 @@ class NotesViewController: UIViewController {
 
         setupView()
         fetchNotes()
-        setupNotificationHandling()
     }
 
     @objc private func addBarItemTapped(_ sender: UIButton) {
@@ -84,60 +87,12 @@ class NotesViewController: UIViewController {
             ])
     }
 
-    private func setupNotificationHandling() {
-        let notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(self, selector: #selector(managedObjectContextdidChange(_:)),
-                                               name: NSNotification.Name.NSManagedObjectContextObjectsDidChange,
-                                               object: coreDataManager.managedObjectContext)
-    }
-
-    @objc private func managedObjectContextdidChange(_ notification: Notification) {
-        guard let userInfo = notification.userInfo else { return }
-        if let inserts = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject> {
-            for insert in inserts {
-                if let note = insert as? Note {
-                    notes?.append(note)
-                    notesDidChange = true
-                }
-            }
-        }
-        if let updates = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> {
-            for update in updates {
-                if let _ = update as? Note {
-                    notesDidChange = true
-                }
-            }
-        }
-        if let deletes = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject> {
-            for delete in deletes {
-                if let note = delete as? Note {
-                    if let index = notes?.index(of: note) {
-                        notes?.remove(at: index)
-                        notesDidChange = true
-                    }
-                }
-            }
-        }
-
-        if notesDidChange {
-            notes?.sort(by: { $0.updatedAtAsDate > $1.updatedAtAsDate })
-            notesTableView.reloadData()
-            updateView()
-        }
-    }
-
     private func fetchNotes() {
-        let fetchRequest: NSFetchRequest<Note> = Note.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(Note.updatedAt), ascending: false)]
-        coreDataManager.managedObjectContext.performAndWait {
-            do {
-                let notes = try fetchRequest.execute()
-                self.notes = notes
-                self.notesTableView.reloadData()
-            } catch {
-                print("Unable to fetch Notes")
-                print("\(error) \n \(error.localizedDescription)")
-            }
+        do {
+            try self.fetchedResultsController.performFetch()
+        } catch {
+            print("Unable to fetch Notes")
+            print("\(error) \n \(error.localizedDescription)")
         }
     }
 
@@ -150,12 +105,16 @@ class NotesViewController: UIViewController {
 }
 
 extension NotesViewController: UITableViewDelegate, UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return self.fetchedResultsController.sections?.count ?? 1
+    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return notes?.count ?? 0
+        return self.fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let note = notes?[indexPath.row] else {
+        guard let note = self.fetchedResultsController.fetchedObjects?[indexPath.row] else {
             fatalError("Unexpected index path")
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
@@ -165,18 +124,16 @@ extension NotesViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let note = notes?[indexPath.row] else {
-            fatalError("Select unexbected row")
-        }
+        let note = fetchedResultsController.object(at: indexPath)
         presentAddNoteController(with: note)
     }
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete else { return }
-        guard let note = notes?[indexPath.row] else {
-            fatalError("Unexpected indexPath")
-        }
+        let note = fetchedResultsController.object(at: indexPath)
         coreDataManager.managedObjectContext.delete(note)
     }
 }
+
+extension NotesViewController: NSFetchedResultsControllerDelegate {}
 
