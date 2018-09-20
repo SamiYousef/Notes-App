@@ -60,6 +60,7 @@ class NotesViewController: UIViewController {
 
         setupView()
         fetchNotes()
+        updateView()
     }
 
     @objc private func addBarItemTapped(_ sender: UIButton) {
@@ -67,7 +68,7 @@ class NotesViewController: UIViewController {
     }
 
     private func updateView() {
-        notesTableView.isEditing = !hasNotes
+        notesTableView.isHidden = !hasNotes
         messageLabel.isHidden = hasNotes
     }
 
@@ -114,12 +115,8 @@ extension NotesViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let note = self.fetchedResultsController.fetchedObjects?[indexPath.row] else {
-            fatalError("Unexpected index path")
-        }
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = note.title
-        cell.detailTextLabel?.text = note.description
+        configure(cell, at: indexPath)
         return cell
     }
 
@@ -135,5 +132,45 @@ extension NotesViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-extension NotesViewController: NSFetchedResultsControllerDelegate {}
+extension NotesViewController: NSFetchedResultsControllerDelegate {
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        notesTableView.beginUpdates()
+    }
+
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        notesTableView.endUpdates()
+        updateView()
+    }
+
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            if let indexPath = newIndexPath {
+                notesTableView.insertRows(at: [indexPath], with: .fade)
+            }
+        case .update:
+            if let indexPath = indexPath,
+                let cell = notesTableView.cellForRow(at: indexPath) {
+                configure(cell, at: indexPath)
+            }
+        case .delete:
+            if let indexPath = indexPath {
+                notesTableView.deleteRows(at: [indexPath], with: .fade)
+            }
+        case .move:
+            if let indexPath = indexPath {
+                notesTableView.deleteRows(at: [indexPath], with: .fade)
+            }
+            if let newIndexPath = newIndexPath {
+                notesTableView.insertRows(at: [newIndexPath], with: .fade)
+            }
+        }
+    }
+
+    private func configure(_ cell: UITableViewCell, at indexPath: IndexPath) {
+        let note = fetchedResultsController.object(at: indexPath)
+        cell.textLabel?.text = note.title
+        cell.detailTextLabel?.text = note.description
+    }
+}
 
