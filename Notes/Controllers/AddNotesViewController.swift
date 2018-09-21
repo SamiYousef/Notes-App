@@ -21,6 +21,37 @@ class AddNotesViewController: UIViewController {
         return titleTextField
     }()
 
+    private lazy var categoryContainer: UIView = {
+        let categoryContainer = UIView()
+        categoryContainer.isHidden = note == nil
+        categoryContainer.translatesAutoresizingMaskIntoConstraints = false
+        return categoryContainer
+    }()
+
+    private lazy var categoryTitle: UILabel = {
+        let categoryTitle = UILabel()
+        categoryTitle.text = "Category"
+        categoryTitle.textColor = .lightGray
+        categoryTitle.translatesAutoresizingMaskIntoConstraints = false
+        return categoryTitle
+    }()
+
+    private lazy var categoryName: UILabel = {
+        let categoryName = UILabel()
+        categoryName.textColor = .darkGray
+        categoryName.text = "No Category"
+        categoryName.translatesAutoresizingMaskIntoConstraints = false
+        return categoryName
+    }()
+
+    private lazy var editCategoryButton: UIButton = {
+        let editCategoryButton = UIButton(type: .system)
+        editCategoryButton.setTitle("Edit", for: .normal)
+        editCategoryButton.addTarget(self, action: #selector(editCatitegoryButtonTaped(_:)), for: .touchDown)
+        editCategoryButton.translatesAutoresizingMaskIntoConstraints = false
+        return editCategoryButton
+    }()
+
     lazy var contentsTextView: UITextView = {
         let contentsTextView = UITextView()
         contentsTextView.layer.cornerRadius = 5
@@ -46,6 +77,7 @@ class AddNotesViewController: UIViewController {
         super.viewDidLoad()
         initView()
         setUpViewData()
+        setUpNotificationHandlling()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -61,6 +93,12 @@ class AddNotesViewController: UIViewController {
 
     private func initView() {
         view.addSubview(titleTextField)
+        view.addSubview(categoryContainer)
+
+        categoryContainer.addSubview(categoryTitle)
+        categoryContainer.addSubview(categoryName)
+        categoryContainer.addSubview(editCategoryButton)
+
         view.addSubview(contentsTextView)
         view.addSubview(saveButton)
 
@@ -72,9 +110,34 @@ class AddNotesViewController: UIViewController {
             ])
 
         NSLayoutConstraint.activate([
-            contentsTextView.leadingAnchor.constraint(equalTo: titleTextField.leadingAnchor),
-            contentsTextView.trailingAnchor.constraint(equalTo: titleTextField.trailingAnchor),
-            contentsTextView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 16),
+            categoryContainer.leadingAnchor.constraint(equalTo: titleTextField.leadingAnchor),
+            categoryContainer.trailingAnchor.constraint(equalTo: titleTextField.trailingAnchor),
+            categoryContainer.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 8),
+            categoryContainer.heightAnchor.constraint(equalToConstant: 70)
+            ])
+
+        NSLayoutConstraint.activate([
+            categoryTitle.leadingAnchor.constraint(equalTo: categoryContainer.leadingAnchor),
+            categoryTitle.trailingAnchor.constraint(equalTo: editCategoryButton.leadingAnchor),
+            categoryTitle.topAnchor.constraint(equalTo: categoryContainer.topAnchor, constant: 8)
+            ])
+
+        NSLayoutConstraint.activate([
+            categoryName.leadingAnchor.constraint(equalTo: categoryTitle.leadingAnchor),
+            categoryName.trailingAnchor.constraint(equalTo: categoryTitle.trailingAnchor),
+            categoryName.topAnchor.constraint(equalTo: categoryTitle.bottomAnchor, constant: 8)
+            ])
+
+        NSLayoutConstraint.activate([
+            editCategoryButton.trailingAnchor.constraint(equalTo: categoryContainer.trailingAnchor),
+            editCategoryButton.topAnchor.constraint(equalTo: categoryContainer.topAnchor, constant: 16),
+            editCategoryButton.widthAnchor.constraint(equalToConstant: 80)
+            ])
+
+        NSLayoutConstraint.activate([
+            contentsTextView.leadingAnchor.constraint(equalTo: categoryContainer.leadingAnchor),
+            contentsTextView.trailingAnchor.constraint(equalTo: categoryContainer.trailingAnchor),
+            contentsTextView.topAnchor.constraint(equalTo: categoryContainer.bottomAnchor, constant: 16),
             contentsTextView.heightAnchor.constraint(equalTo: safeArea.heightAnchor, multiplier: 0.5)
             ])
 
@@ -86,10 +149,32 @@ class AddNotesViewController: UIViewController {
             ])
     }
 
+    private func setUpNotificationHandlling() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(valueDidChange(_:)),
+                                               name: NSNotification.Name.NSManagedObjectContextObjectsDidChange,
+                                               object: note?.managedObjectContext)
+    }
+
+    @objc private func valueDidChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo else { return }
+        guard let updates = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject> else { return }
+        if (updates.filter{ $0 == note}).count > 0 {
+            categoryName.text = note?.category?.name ?? "No category"
+        }
+    }
+
+    @objc private func editCatitegoryButtonTaped(_ sender: UIButton) {
+        let categoriesController = CategoriesViewController()
+        categoriesController.note = note
+        self.navigationController?.pushViewController(categoriesController, animated: true)
+    }
+
     private func setUpViewData() {
         guard let note = note else { return }
         titleTextField.text = note.title
         contentsTextView.text = note.contents
+        categoryName.text = note.category?.name
     }
 
     @objc private func saveNoteTaped(_ sender: UIButton) {
@@ -113,3 +198,4 @@ class AddNotesViewController: UIViewController {
     }
 
 }
+

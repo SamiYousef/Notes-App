@@ -10,7 +10,7 @@ import UIKit
 import CoreData
 
 class NotesViewController: UIViewController {
-
+    
     private lazy var fetchedResultsController: NSFetchedResultsController<Note> = {
         let fetchRequest: NSFetchRequest<Note> = Note.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(Note.updatedAt), ascending: false)]

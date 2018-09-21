@@ -17,6 +17,9 @@
 		061D9365214D35AC0086D90A /* Controller+Extenstion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 061D9364214D35AC0086D90A /* Controller+Extenstion.swift */; };
 		061D9367214D6F8B0086D90A /* Note+Extenstion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 061D9366214D6F8B0086D90A /* Note+Extenstion.swift */; };
 		062D51722153D668002739B1 /* Swift.gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 062D51712153D668002739B1 /* Swift.gitignore */; };
+		062D51742154140E002739B1 /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062D51732154140E002739B1 /* CategoriesViewController.swift */; };
+		062D5176215428F5002739B1 /* String+Extenstions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062D5175215428F5002739B1 /* String+Extenstions.swift */; };
+		062D5178215512B5002739B1 /* Color+Extenstion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062D5177215512B5002739B1 /* Color+Extenstion.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +35,9 @@
 		061D9364214D35AC0086D90A /* Controller+Extenstion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Controller+Extenstion.swift"; sourceTree = "<group>"; };
 		061D9366214D6F8B0086D90A /* Note+Extenstion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Note+Extenstion.swift"; sourceTree = "<group>"; };
 		062D51712153D668002739B1 /* Swift.gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = Swift.gitignore; sourceTree = "<group>"; };
+		062D51732154140E002739B1 /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
+		062D5175215428F5002739B1 /* String+Extenstions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extenstions.swift"; sourceTree = "<group>"; };
+		062D5177215512B5002739B1 /* Color+Extenstion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extenstion.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +104,7 @@
 			children = (
 				061D9348214BB3250086D90A /* NotesViewController.swift */,
 				061D9361214D2F4D0086D90A /* AddNotesViewController.swift */,
+				062D51732154140E002739B1 /* CategoriesViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -115,6 +122,8 @@
 			children = (
 				061D9364214D35AC0086D90A /* Controller+Extenstion.swift */,
 				061D9366214D6F8B0086D90A /* Note+Extenstion.swift */,
+				062D5175215428F5002739B1 /* String+Extenstions.swift */,
+				062D5177215512B5002739B1 /* Color+Extenstion.swift */,
 			);
 			path = Extenstions;
 			sourceTree = "<group>";
@@ -192,10 +201,13 @@
 			files = (
 				061D935A214BB3D70086D90A /* CoreDataManager.swift in Sources */,
 				061D9367214D6F8B0086D90A /* Note+Extenstion.swift in Sources */,
+				062D5178215512B5002739B1 /* Color+Extenstion.swift in Sources */,
 				061D9362214D2F4D0086D90A /* AddNotesViewController.swift in Sources */,
 				061D9365214D35AC0086D90A /* Controller+Extenstion.swift in Sources */,
 				061D9349214BB3250086D90A /* NotesViewController.swift in Sources */,
 				061D9347214BB3250086D90A /* AppDelegate.swift in Sources */,
+				062D51742154140E002739B1 /* CategoriesViewController.swift in Sources */,
+				062D5176215428F5002739B1 /* String+Extenstions.swift in Sources */,
 				061D935E214BC5950086D90A /* Notes.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
